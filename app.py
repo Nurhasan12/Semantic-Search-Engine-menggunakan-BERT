@@ -12,27 +12,13 @@ st.set_page_config(
 # --- CSS untuk gaya Google-like ---
 st.markdown("""
     <style>
-        body {
-            background-color: #fff;
-        }
-        .search-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin-top: 100px;
-        }
-        .search-box {
-            width: 100%;
-            max-width: 600px;
-        }
         .stTextInput > div > input {
             font-size: 20px;
             padding: 20px;
         }
         .result-box {
             border-bottom: 1px solid #eee;
-            padding: 10px 0;
+            padding: 20px 0;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -49,7 +35,7 @@ df_data, embeddings = load_all()
 
 # --- Input di tengah ---
 with st.form("search_form"):
-    user_input = st.text_input("", placeholder="Search...", key="search_input")
+    user_input = st.text_input("", placeholder="Search news article...", key="search_input")
     search_button = st.form_submit_button("Search")
 
 # --- Hasil pencarian ---
@@ -59,11 +45,19 @@ if search_button and user_input.strip():
         st.markdown("---")
         for i, row in result_df.iterrows():
             label_color = "green" if row['label'].lower() == "true" else "red"
+            preview_text = row['text']
+            preview_text = preview_text.replace('\n', ' ').strip()
+            if len(preview_text) > 200:
+                preview_text = preview_text[:200].rsplit(' ', 1)[0] + "..."  # Potong jadi 2 baris (approx)
+
             st.markdown(f"""
-              <div class="result-box">
-                <div style='font-size: 18px; color: blue;'>{row['text_raw']}</div>
-                <div style='color: #555;'>
-                  Label: <b style='color: {label_color};'>{row['label']}</b> | Score: {row['score']:.4f}
+                <div class="result-box">
+                    <h4 style='margin-bottom:5px; color:#1a0dab;'>{row['title']}</h4>
+                    <p style='margin:5px 0; color:#4d4d4d; font-size:15px; line-height:1.4em; max-height:2.8em; overflow:hidden;'>{preview_text}</p>
+                    <div style='font-size:14px; color:#666;'>
+                        Label: <b style='color: {label_color};'>{row['label']}</b> |
+                        Score: <b>{row['score']:.4f}</b>
+                    </div>
                 </div>
-              </div>
             """, unsafe_allow_html=True)
+
